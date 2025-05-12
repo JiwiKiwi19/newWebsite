@@ -1,45 +1,84 @@
+import {
+  ChatContainer,
+  ConversationHeader,
+  MessageList,
+  Message,
+  MessageInput,
+  MainContainer,
+} from "@chatscope/chat-ui-kit-react";
+
 import { useState } from "react";
+import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 
-type Message = {
-  user: string;
-  text: string;
-}[];
+export default function ChatPage() {
+  const [messages, setMessages] = useState([
+    { text: "Hello! How can I help you?", sender: "ai" },
+  ]);
 
-export default function Chat() {
-  const [messages, setMessages] = useState<Message>([]);
-  const [input, setInput] = useState("");
+  const sendMessage = async (inputText: string) => {
+    setMessages((prev) => [...prev, { text: inputText, sender: "user" }]);
 
-  const sendMessage = async () => {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      body: JSON.stringify({ message: input }),
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await response.json();
-    setMessages([
-      ...messages,
-      { user: "Jiwon", text: input },
-      { user: "AI", text: data.reply },
-    ]);
-    setInput("");
+    try {
+      const res = await fetch("http://localhost:3000/query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: inputText }), // Match backend's expected input
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch response from backend");
+      }
+
+      const data = await res.json();
+      setMessages((prev) => [...prev, { text: data.response, sender: "ai" }]);
+    } catch (error) {
+      console.error("Error:", error);
+      setMessages((prev) => [
+        ...prev,
+        { text: "Sorry, something went wrong.", sender: "ai" },
+      ]);
+    }
   };
 
   return (
-    <div>
-      <div>
-        {messages.map((msg, index) => (
-          <div key={index}>
-            <strong>{msg.user}:</strong> {msg.text}
-          </div>
-        ))}
-      </div>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type your message..."
-      />
-      <button onClick={sendMessage}>Send</button>
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: "100vh",
+      }}
+    >
+      <MainContainer>
+        <ChatContainer>
+          <ConversationHeader>
+            <ConversationHeader.Content userName="AI Assistant" info="Online" />
+          </ConversationHeader>
+          <MessageList>
+            {messages.map((msg, i) => (
+              <Message
+                key={i}
+                model={{
+                  message: msg.text,
+                  sentTime: "just now",
+                  sender: msg.sender,
+                  direction: msg.sender === "user" ? "outgoing" : "incoming",
+                  position: "normal",
+                }}
+              />
+            ))}
+          </MessageList>
+          <MessageInput
+            placeholder="Type message here"
+            onSend={(val) => sendMessage(val)}
+            attachButton={false}
+          />
+        </ChatContainer>
+      </MainContainer>
     </div>
   );
 }
