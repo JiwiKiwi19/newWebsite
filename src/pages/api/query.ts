@@ -4,7 +4,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     const { message } = req.body;
 
-    const response = await fetch("https://your-ai-endpoint.com/query", {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
       method: "POST",
       body: JSON.stringify({ query: message }),
       headers: { "Content-Type": "application/json" },
