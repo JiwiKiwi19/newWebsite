@@ -19,7 +19,7 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { text: inputText, sender: "user" }]);
 
     try {
-      const res = await fetch("http://localhost:3000/query", {
+      const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +65,7 @@ export default function ChatPage() {
                 model={{
                   message: msg.text,
                   sentTime: "just now",
-                  sender: msg.sender,
+                  sender: msg.sender === "user" ? "User" : "AI Assistant",
                   direction: msg.sender === "user" ? "outgoing" : "incoming",
                   position: "normal",
                 }}
