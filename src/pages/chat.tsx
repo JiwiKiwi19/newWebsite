@@ -19,7 +19,7 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, { text: inputText, sender: "user" }]);
 
     try {
-      const res = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      const res = await fetch("api/query", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
